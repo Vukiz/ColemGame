@@ -2,13 +2,11 @@ package com.crabcorp.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.crabcorp.GameWorld.GameRenderer;
 import com.crabcorp.GameWorld.GameWorld;
 
 public class GameScreen implements Screen {
 
     private GameWorld world;
-    private GameRenderer renderer;
 
     private float runTime = 0;
 
@@ -22,16 +20,15 @@ public class GameScreen implements Screen {
 
 
         world = new GameWorld(gameWidth,gameHeight);
-        renderer = new GameRenderer(world,gameWidth,gameHeight);
 
-        Gdx.input.setInputProcessor(renderer.getStage());
+        Gdx.input.setInputProcessor(world.getStage());
     }
 
     @Override
     public void render(float delta) {
         runTime +=delta;
         world.update(delta);
-        renderer.render(runTime);
+        world.render(runTime);
     }
 
     @Override
