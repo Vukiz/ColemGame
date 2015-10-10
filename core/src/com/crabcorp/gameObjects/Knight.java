@@ -17,7 +17,7 @@ public class Knight implements Unit  {
     private final int width = 80;
     private final int height = 100;
     private final int DMG = 250;
-    private final int attackRange = 20;
+    private final int attackRange = 50;
     public int attackSpeed = 200;
     private int speed = 100;
     private int health = 1000;
@@ -67,21 +67,27 @@ public class Knight implements Unit  {
 
     private void actionATTACK(float delta) {
         //target.hit(this.DMG);
+        if(target.isDead()){
+            this.currentState = STATE.MOVE;
+        }
     }
 
     private void actionMOVE(float delta) {
+        //TODO unit synchronization
         if (this.destination == DEST.RIGHT) {
-            if (this.position.x < target.getX() + this.attackRange) {
+            if (this.position.x < target.getX() - this.attackRange*2) {
                 this.position.add(velocity.cpy().scl(delta));
-            } else {
+            }
+            else {
                 this.velocity = new Vector2(0, 0);
                 this.currentState = STATE.ATTACK;
             }
         }
         else {
-            if (position.x > target.getX() - this.attackRange) {
+            if (position.x > target.getX() + target.getWidth() + this.attackRange) {
                 this.position.add(velocity.cpy().scl(delta));
-            } else {
+            }
+            else {
                 this.velocity = new Vector2(0, 0);
                 this.currentState = STATE.ATTACK;
             }
@@ -121,9 +127,7 @@ public class Knight implements Unit  {
 
         batch.end();
     }
-    public void setPositionX(float x){
-        this.position.x = x;
-    }
+
     public float getX(){
         return this.position.x;
     }
@@ -135,9 +139,6 @@ public class Knight implements Unit  {
     }
     public int getWidth() {
         return this.width;
-    }
-    public int getHealth() {
-        return this.health;
     }
     @Override
     public boolean isDead() {

@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.crabcorp.cgHelpers.AssetLoader;
 import com.crabcorp.gameObjects.Castle;
 import com.crabcorp.gameObjects.Knight;
+import com.crabcorp.gameObjects.Spawner;
 import com.crabcorp.gameObjects.Unit;
 
 import java.util.Iterator;
@@ -56,19 +57,17 @@ public class GameWorld {
 
         cam = new OrthographicCamera();
         cam.setToOrtho(true, screenWidth, screenHeight);
-
         Viewport viewport = new FitViewport(screenWidth,screenHeight,cam);
-
         batcher = new SpriteBatch();
         batcher.setProjectionMatrix(cam.combined);
-
         initObjects(viewport);
+
 
         alliesList = new LinkedList<Unit>();
         enemyList = new LinkedList<Unit>();
 
-        castleMine = new Castle(castleMinePosX,castleMinePosY);
-        castleEnemy = new Castle(castleEnemyPosX,castleEnemyPosY);
+        castleMine = Spawner.spawnCastle(castleMinePosX,castleMinePosY);
+        castleEnemy = Spawner.spawnCastle(castleEnemyPosX,castleEnemyPosY);
 
         alliesList.add(castleMine);
         enemyList.add(castleEnemy);
@@ -77,23 +76,58 @@ public class GameWorld {
         currentEnemyFront = enemyList.getFirst();
     }
     //dependecy injection inversion of control
-    //renderer+world
-    //getx gety ->> const
-    //factories
-    //knight rework
     //buttons class
 
     public void update(float delta){
         setFrontline();
         for (Iterator<Unit> i = alliesList.iterator(); i.hasNext();) {
-            Unit currentAllie = i.next();
-            currentAllie.update(delta,currentEnemyFront);
+            i.next().update(delta,currentEnemyFront);
         }
         for (Iterator<Unit> i = enemyList.iterator(); i.hasNext();) {
-            Unit currentEnemy = i.next();
-            currentEnemy.update(delta,currentAlliesFront);
+            i.next().update(delta,currentAlliesFront);
         }
     }
+    private void setFrontline() {
+        if(alliesList.isEmpty()){
+            currentAlliesFront = castleMine; //TODO GAMEOVER
+        }
+        else {
+            if (currentAlliesFront.isDead()) {
+                alliesList.remove(currentAlliesFront);                      //Is first element deleted????
+                currentAlliesFront = alliesList.getFirst();
+            }
+        }
+        if(enemyList.isEmpty()) {
+            currentEnemyFront = castleEnemy;    //TODO GAMEOVER
+        }
+        else {
+            if (currentEnemyFront.isDead()) {
+                enemyList.remove(currentEnemyFront);                      //Is first element deleted????
+                currentEnemyFront = enemyList.getFirst();
+            }
+        }
+    }
+    public void spawn(int spawnType,int spawnSide){
+        switch (spawnSide){
+            case 1:
+                alliesList.add(Spawner.spawnKnight(castleMinePosX,castleMinePosY,false));   // castle size == 200.200
+                if(currentAlliesFront == castleMine){
+                    currentAlliesFront = alliesList.getLast();
+                }
+                break;
+            case 2:
+                enemyList.add(Spawner.spawnKnight(castleEnemyPosX,castleEnemyPosY,true)); //true == enemy
+                if(currentEnemyFront == castleEnemy){
+                    currentEnemyFront = enemyList.getLast();
+                }
+            default:break;
+
+        }
+    }
+
+
+
+    //rendering
     public void render(float runTime) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -113,7 +147,6 @@ public class GameWorld {
         batcher.draw(AssetLoader.backGround, 0, 0, screenWidth, screenHeight);
         batcher.end();
     }
-
     public void initObjects(Viewport v){
         initButton(v);
         stage = new Stage(v,batcher);
@@ -121,7 +154,6 @@ public class GameWorld {
         stage.addActor(buttonRight);
 
     }
-
     private void initButton(final Viewport viewport) {
         buttonLeft = new Button(AssetLoader.buttonTexture);
         buttonRight = new Button(AssetLoader.buttonTexture);
@@ -151,39 +183,7 @@ public class GameWorld {
     public Stage getStage() {
         return this.stage;
     }
-    private void setFrontline() {
-        if(alliesList.isEmpty()){
-            currentAlliesFront = castleMine; //TODO GAMEOVER
-        }
-        else {
-            if (currentAlliesFront.isDead()) {
-                alliesList.removeFirst();                      //Is first element deleted????
-                currentAlliesFront = alliesList.getFirst();
-            }
-        }
-        if(enemyList.isEmpty()) {
-            currentEnemyFront = castleEnemy;    //TODO GAMEOVER
-        }
-        else {
-            if (currentEnemyFront.isDead()) {
-                enemyList.removeFirst();                      //Is first element deleted????
-                currentEnemyFront = enemyList.getFirst();
-            }
-        }
-    }
 
-
-    public void spawn(int spawnType,int spawnSide){
-        switch (spawnSide){
-            case 1:
-                alliesList.add(new Knight(castleMinePosX + 200,castleMinePosY + 100,false)); //false == ally  castle size == 200.200
-                break;
-            case 2:
-                enemyList.add(new Knight(castleEnemyPosX ,castleEnemyPosY + 100,true)); //true == enemy
-            default:break;
-
-        }
-    }
 
 
 
