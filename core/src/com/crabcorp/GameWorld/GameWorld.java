@@ -47,7 +47,7 @@ public class GameWorld {
     private float castleMinePosY;
     private float castleEnemyPosX;
     private float castleEnemyPosY;
-
+    private String  output;
 
 
     public GameWorld(float width,float height){
@@ -80,6 +80,8 @@ public class GameWorld {
 
         currentAlliesFront = alliesList.getFirst();
         currentEnemyFront = enemyList.getFirst();
+
+        output = new String("Game On");
     }
     //dependecy injection inversion of control
     //buttons class
@@ -94,29 +96,42 @@ public class GameWorld {
         }
         if(!dieing.isEmpty()){
             for (Iterator<Unit> i = dieing.iterator(); i.hasNext();) {
-                i.next().update(delta,null);
+
+                if(!i.next().isDieing()){
+                    dieing.remove(i.next());
+                }
             }
         }
     }
     private void setFrontline() {
         if(alliesList.isEmpty()){
-            currentAlliesFront = castleMine; //TODO GAMEOVER
+            output = "Enemy Win";
         }
         else {
             if (currentAlliesFront.isDead()) {
                 dieing.add(currentAlliesFront);
-                alliesList.remove(currentAlliesFront);                      //Is first element deleted????
-                currentAlliesFront = alliesList.getFirst();
+                alliesList.remove(currentAlliesFront);
+                if(!alliesList.isEmpty()) {
+                    currentAlliesFront = alliesList.getFirst();
+                }
+                else {
+                    currentAlliesFront = null;
+                }
             }
         }
         if(enemyList.isEmpty()) {
-            currentEnemyFront = castleEnemy;    //TODO GAMEOVER
+            output = "Allies Win";
         }
         else {
             if (currentEnemyFront.isDead()) {
                 dieing.add(currentEnemyFront);
-                enemyList.remove(currentEnemyFront);                      //Is first element deleted????
-                currentEnemyFront = enemyList.getFirst();
+                enemyList.remove(currentEnemyFront);
+                if(!enemyList.isEmpty()){
+                    currentEnemyFront = enemyList.getFirst();
+                }
+                else {
+                    currentEnemyFront = null;
+                }
             }
         }
     }
@@ -144,12 +159,13 @@ public class GameWorld {
     public void render(float runTime) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        drawBackground();
+        drawBackground();                               //BG and text
 
-        stage.draw();
-        alliesList.getFirst().draw(batcher,runTime);
-        enemyList.getFirst().draw(batcher, runTime);
-        for(int i = 1 ; i < alliesList.size();i++){
+        stage.draw();                                   //BUTTONS
+                                                                    //TODO castles in lists - rework
+        castleMine.draw(batcher,runTime);               //Castles
+        castleEnemy.draw(batcher,runTime);
+        for(int i = 1 ; i < alliesList.size();i++){  //UNITS FURTHER
             alliesList.get(i).draw(batcher, runTime);
         }
         for(int i = 1 ; i < enemyList.size();i++){
@@ -161,8 +177,8 @@ public class GameWorld {
 
         batcher.draw(AssetLoader.background, 0, 0, screenWidth, screenHeight);
 
-        AssetLoader.shadow.draw(batcher, "My Gold Amount", (screenWidth / 2)- 100, 50);
-        AssetLoader.font.draw(batcher, "My Gold Amount", (screenWidth / 2)- 100, 50);
+        AssetLoader.shadow.draw(batcher, "" + output, (screenWidth / 2)- 100, 50);
+        AssetLoader.font.draw(batcher, "" + output, (screenWidth / 2)- 100, 50);
 
         batcher.end();
     }

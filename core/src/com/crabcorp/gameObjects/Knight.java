@@ -9,15 +9,16 @@ public class Knight implements Unit  {
     private Vector2 position;
     private Vector2 velocity;
     public enum DEST  {LEFT,RIGHT};
-    public enum STATE {MOVE,ATTACK,DIE}
+    public enum STATE {MOVE,ATTACK,DIE,STAY}
     public boolean dead = false;
-
+    public boolean dieing = false;
 
     private final int width = 80;
     private final int height = 100;
     private final int DMG = 200;
     private final int attackRange = 60;
     public float attackSpeed = 0.5f;
+
     private int speed = 100;
     private int health = 1000;
     private DEST destination = DEST.RIGHT;
@@ -41,6 +42,9 @@ public class Knight implements Unit  {
 
     public void update(float delta,Unit gTarget){
         this.target = gTarget;
+        if(this.target == null){
+            this.currentState = STATE.STAY;
+        }
         switch (this.currentState){
             case MOVE:
                 actionMOVE(delta);
@@ -48,24 +52,25 @@ public class Knight implements Unit  {
             case ATTACK:
                 actionATTACK(delta);
                 break;
-            case DIE:
-                actionDIE();
-                break;
+
         }
     }
 
-    private void actionDIE() {
-        this.velocity = new Vector2(0,0);
+    public boolean isDieing(){
+        return this.dieing;
     }
-
     private void actionATTACK(float delta) {
         this.attackCooldown += delta;
-        if(this.attackCooldown / this.attackSpeed > 0) {
+        if(this.attackCooldown >= this.attackSpeed) {
             this.target.hit(this.DMG);
-            this.attackCooldown-=this.attackSpeed;
+            while(this.attackCooldown >= this.attackSpeed){
+                this.attackCooldown -= this.attackSpeed;
+            }
         }
         if(target.isDead()){
             this.currentState = STATE.MOVE;
+            if(this.destination == DEST.RIGHT)this.velocity = new Vector2(100,0);
+            else this.velocity = new Vector2(-100,0);
             attackCooldown = 0;
         }
     }
@@ -85,7 +90,7 @@ public class Knight implements Unit  {
     public synchronized void  hit(int damage) {
         this.health -= damage;
         if(this.health <= 0){
-
+            this.die();
             this.currentState = STATE.DIE;
         }
     }
@@ -93,6 +98,7 @@ public class Knight implements Unit  {
     @Override
     public void die() {
         this.dead = true;
+        this.dieing = true;
     }
 
     public void draw (Batch batch, float runTime){
@@ -123,8 +129,15 @@ public class Knight implements Unit  {
                         this.destination == DEST.RIGHT ? this.width : -this.width,
                         this.height);
                 fadeTime += currentTimeElapsed - startTime;
-                if(fadeTime >= 3)this.die();
+                if(fadeTime >= 5)this.dieing = false;
                 startTime = runTime;
+                break;
+            case STAY:
+                batch.draw(AssetLoader.knightStand,
+                        this.position.x,
+                        this.position.y,
+                        this.width,
+                        this.height);
         }
         batch.end();
     }

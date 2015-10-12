@@ -20,6 +20,7 @@ public class Castle implements Unit {
     @Override
     public void hit(int damage) {
         this.health -= damage;
+        if(this.health <= 0) this.die();
     }
 
     @Override
@@ -39,6 +40,11 @@ public class Castle implements Unit {
     }
     public int getWidth() {
         return this.width;
+    }
+
+    @Override
+    public boolean isDieing() {
+        return this.dead;
     }
 
     @Override

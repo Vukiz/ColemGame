@@ -44,12 +44,15 @@ public class AssetLoader  {
         healthBar = new TextureRegionDrawable(new TextureRegion(backTextures,480,210,100,10));
         healthBaroff = new TextureRegionDrawable(new TextureRegion(backTextures,680,410,100,10));
 
-        dead = new TextureRegion(knightTexture,600,192,300,106);//left
+        dead = new TextureRegion(knightTexture,600,0,300,300);//left
         dead.flip(false, true);
 
 
         fall = new TextureRegion(knightTexture,300,73,300,218);//left
         fall.flip(false, true);
+
+        knightStand = new TextureRegion(knightTexture,600, 759,300, 233);
+        knightStand.flip(false,true);
 
         knightMove1 = new TextureRegion(knightTexture,300,291,300,231);//left
         knightMove1.flip(false, true);
