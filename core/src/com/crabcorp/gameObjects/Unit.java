@@ -13,5 +13,8 @@ public interface Unit  {
     public int getWidth();
     public boolean isDead();
     public void update(float delta,Unit target);
-    public void hit(int damage);
+    public  void  hit(int damage);
+
+    void die();
+
 }

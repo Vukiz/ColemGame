@@ -30,15 +30,19 @@ public class GameWorld {
     private OrthographicCamera cam;
     private SpriteBatch batcher;
     private Stage stage;
+
     private Button buttonLeft;
     private Button buttonRight;
 
     private LinkedList<Unit> alliesList;
     private LinkedList<Unit> enemyList;
+    private LinkedList<Unit> dieing;
+
     private Unit currentAlliesFront;
     private Unit currentEnemyFront;
 
-    private Castle castleMine,castleEnemy;
+    private Castle castleMine;
+    private Castle castleEnemy;
     private float castleMinePosX;
     private float castleMinePosY;
     private float castleEnemyPosX;
@@ -58,13 +62,15 @@ public class GameWorld {
         cam = new OrthographicCamera();
         cam.setToOrtho(true, screenWidth, screenHeight);
         Viewport viewport = new FitViewport(screenWidth,screenHeight,cam);
+
         batcher = new SpriteBatch();
         batcher.setProjectionMatrix(cam.combined);
-        initObjects(viewport);
 
+        initObjects(viewport);
 
         alliesList = new LinkedList<Unit>();
         enemyList = new LinkedList<Unit>();
+        dieing = new LinkedList<Unit>();
 
         castleMine = Spawner.spawnCastle(castleMinePosX,castleMinePosY);
         castleEnemy = Spawner.spawnCastle(castleEnemyPosX,castleEnemyPosY);
@@ -86,6 +92,11 @@ public class GameWorld {
         for (Iterator<Unit> i = enemyList.iterator(); i.hasNext();) {
             i.next().update(delta,currentAlliesFront);
         }
+        if(!dieing.isEmpty()){
+            for (Iterator<Unit> i = dieing.iterator(); i.hasNext();) {
+                i.next().update(delta,null);
+            }
+        }
     }
     private void setFrontline() {
         if(alliesList.isEmpty()){
@@ -93,6 +104,7 @@ public class GameWorld {
         }
         else {
             if (currentAlliesFront.isDead()) {
+                dieing.add(currentAlliesFront);
                 alliesList.remove(currentAlliesFront);                      //Is first element deleted????
                 currentAlliesFront = alliesList.getFirst();
             }
@@ -102,6 +114,7 @@ public class GameWorld {
         }
         else {
             if (currentEnemyFront.isDead()) {
+                dieing.add(currentEnemyFront);
                 enemyList.remove(currentEnemyFront);                      //Is first element deleted????
                 currentEnemyFront = enemyList.getFirst();
             }
@@ -132,6 +145,7 @@ public class GameWorld {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         drawBackground();
+
         stage.draw();
         alliesList.getFirst().draw(batcher,runTime);
         enemyList.getFirst().draw(batcher, runTime);
@@ -144,7 +158,12 @@ public class GameWorld {
     }
     private void drawBackground() {
         batcher.begin();
-        batcher.draw(AssetLoader.backGround, 0, 0, screenWidth, screenHeight);
+
+        batcher.draw(AssetLoader.background, 0, 0, screenWidth, screenHeight);
+
+        AssetLoader.shadow.draw(batcher, "My Gold Amount", (screenWidth / 2)- 100, 50);
+        AssetLoader.font.draw(batcher, "My Gold Amount", (screenWidth / 2)- 100, 50);
+
         batcher.end();
     }
     public void initObjects(Viewport v){

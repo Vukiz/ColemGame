@@ -22,6 +22,11 @@ public class Castle implements Unit {
         this.health -= damage;
     }
 
+    @Override
+    public void die() {
+        this.dead = true;
+    }
+
     public void update(float delta,Unit target){};
     public float getX(){
         return this.position.x;
