@@ -1,6 +1,7 @@
 package com.crabcorp.gameObjects;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.crabcorp.GameWorld.GameWorld;
 import com.crabcorp.cgHelpers.AssetLoader;
@@ -38,13 +39,9 @@ public class Knight implements Unit  {
         }
 
     }
-
-
     public void update(float delta,Unit gTarget){
         this.target = gTarget;
-        if(this.target == null){
-            this.currentState = STATE.STAY;
-        }
+        this.setState();
         switch (this.currentState){
             case MOVE:
                 actionMOVE(delta);
@@ -52,13 +49,44 @@ public class Knight implements Unit  {
             case ATTACK:
                 actionATTACK(delta);
                 break;
-
         }
     }
 
-    public boolean isDieing(){
-        return this.dieing;
+        public void setState() {
+        if(this.health <= 0){
+           this.setDieState();
+        }else {
+            if (this.target == null) {
+                this.setStayState();
+            } else {
+                if (this.destination == DEST.RIGHT ? this.position.x < target.getX()-this.attackRange : this.position.x > target.getX() + this.attackRange) {
+                    this.setMoveState();
+                } else {
+                    this.setAttackState();
+                }
+            }
+        }
     }
+
+    public void setStayState() {
+        this.velocity = new Vector2(0, 0);
+        this.currentState = STATE.STAY;
+    }
+    public void setMoveState(){
+        this.currentState = STATE.MOVE;
+        if(this.destination == DEST.RIGHT)this.velocity = new Vector2(100,0);
+        else this.velocity = new Vector2(-100,0);
+    }
+    public void setAttackState(){
+        this.currentState = STATE.ATTACK;
+        this.velocity = new Vector2(0, 0);
+    }
+    public void setDieState() {
+        this.dead = true;
+        this.dieing = true;
+        this.currentState = STATE.DIE;
+    }
+
     private void actionATTACK(float delta) {
         this.attackCooldown += delta;
         if(this.attackCooldown >= this.attackSpeed) {
@@ -66,82 +94,63 @@ public class Knight implements Unit  {
             while(this.attackCooldown >= this.attackSpeed){
                 this.attackCooldown -= this.attackSpeed;
             }
-        }
-        if(target.isDead()){
-            this.currentState = STATE.MOVE;
-            if(this.destination == DEST.RIGHT)this.velocity = new Vector2(100,0);
-            else this.velocity = new Vector2(-100,0);
-            attackCooldown = 0;
+            //TODO ATTACK QUEUE??? if they will gather more than (target.health / this.attack) units they will oneshot them
         }
     }
 
     private void actionMOVE(float delta) {
-        //TODO unit synchronization
-        if (this.destination == DEST.RIGHT ?
-                (this.position.x < target.getX() - this.attackRange) :
-                (this.position.x > target.getX() + this.attackRange)) {
-            this.position.add(velocity.cpy().scl(delta));
-        } else {
-            this.velocity = new Vector2(0, 0);
-            this.currentState = STATE.ATTACK;
-        }
+        this.position.add(velocity.cpy().scl(delta));
     }
+
     @Override
     public synchronized void  hit(int damage) {
         this.health -= damage;
-        if(this.health <= 0){
-            this.die();
-            this.currentState = STATE.DIE;
-        }
     }
 
     @Override
     public void die() {
-        this.dead = true;
-        this.dieing = true;
+
     }
 
     public void draw (Batch batch, float runTime){
         batch.begin();
         switch (this.currentState){
             case MOVE:
-                batch.draw(AssetLoader.knightAnimationMoving.getKeyFrame(runTime),
-                        this.destination == DEST.RIGHT ? this.position.x : this.position.x + this.width,
-                        this.position.y,
-                        this.destination == DEST.RIGHT ? this.width : -this.width,
-                        this.height);
+                drawTexture(batch, AssetLoader.knightAnimationMoving.getKeyFrame(runTime), runTime);
                 break;
 
             case ATTACK:
-                batch.draw(AssetLoader.knightAnimationAttack.getKeyFrame(runTime),
-                        this.destination == DEST.RIGHT ? this.position.x : this.position.x + this.width,
-                        this.position.y,
-                        this.destination == DEST.RIGHT ? this.width : -this.width,
-                        this.height);
+                drawTexture(batch,AssetLoader.knightAnimationAttack.getKeyFrame(runTime),runTime);
                 break;
             case DIE:
-                if(startTime == 0) startTime = runTime;
+                if(startTime == 0){
+                    startTime = runTime;
+                }
                 currentTimeElapsed = runTime;
-
-                batch.draw(AssetLoader.dieing.getKeyFrame(runTime),
-                        this.destination == DEST.RIGHT ? this.position.x : this.position.x + this.width,
-                        this.position.y,
-                        this.destination == DEST.RIGHT ? this.width : -this.width,
-                        this.height);
+                drawTexture(batch, AssetLoader.knightAnimationDieing.getKeyFrame(runTime), runTime);
                 fadeTime += currentTimeElapsed - startTime;
-                if(fadeTime >= 5)this.dieing = false;
+                if(fadeTime >= 4){
+                    this.dieing = false;
+                }
                 startTime = runTime;
                 break;
             case STAY:
-                batch.draw(AssetLoader.knightStand,
-                        this.position.x,
-                        this.position.y,
-                        this.width,
-                        this.height);
+                drawTexture(batch, AssetLoader.knightStand, 0);
         }
         batch.end();
     }
 
+    private void drawTexture(Batch batcher, TextureRegion keyFrame,float runTime) {
+        batcher.draw(keyFrame,
+                this.destination == DEST.RIGHT ? this.position.x : this.position.x + this.width,
+                this.position.y,
+                this.destination == DEST.RIGHT ? this.width : -this.width,
+                this.height);
+    }
+
+    public boolean isDieing(){
+        return this.dieing;
+    }
     public float getX(){
         return this.position.x;
     }

@@ -54,7 +54,7 @@ public class Castle implements Unit {
 
     public void draw(Batch batcher,float runTime){
         batcher.begin();
-        batcher.draw(AssetLoader.castle, this.position.x, this.position.y, this.width, this.height);
+        batcher.draw(AssetLoader.castle, this.position.x, this.position.y + 20, this.width, this.height); // ВЫРАВНИВАЮ С ФОНОМ
         batcher.end();
     }
 

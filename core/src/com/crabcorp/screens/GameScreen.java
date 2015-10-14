@@ -20,7 +20,6 @@ public class GameScreen implements Screen {
 
 
         world = new GameWorld(gameWidth,gameHeight);
-
         Gdx.input.setInputProcessor(world.getStage());
     }
 

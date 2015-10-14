@@ -11,13 +11,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.crabcorp.buttons.ColemButtons;
 import com.crabcorp.cgHelpers.AssetLoader;
 import com.crabcorp.gameObjects.Castle;
-import com.crabcorp.gameObjects.Knight;
 import com.crabcorp.gameObjects.Spawner;
 import com.crabcorp.gameObjects.Unit;
+import com.crabcorp.screens.GameScreen;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -31,8 +31,9 @@ public class GameWorld {
     private SpriteBatch batcher;
     private Stage stage;
 
-    private Button buttonLeft;
-    private Button buttonRight;
+    private Button buttonSpawnLeft;
+    private Button buttonSpawnRight;
+    private Button buttonRestart;
 
     private LinkedList<Unit> alliesList;
     private LinkedList<Unit> enemyList;
@@ -49,6 +50,13 @@ public class GameWorld {
     private float castleEnemyPosY;
     private String  output;
 
+    private final float incomeTime = 5;
+    private float timeSinceLastIncome = 0;
+
+    private int allyGold = 10;
+    private int enemyGold = 10;
+    private int allyIncome = 10;
+    private int enemyIncome = 10;
 
     public GameWorld(float width,float height){
         screenWidth = width;
@@ -66,6 +74,12 @@ public class GameWorld {
         batcher = new SpriteBatch();
         batcher.setProjectionMatrix(cam.combined);
 
+        StartGame(viewport);
+
+    }
+    //dependecy injection inversion of control
+    //buttons class
+    public void StartGame(Viewport viewport){
         initObjects(viewport);
 
         alliesList = new LinkedList<Unit>();
@@ -78,62 +92,76 @@ public class GameWorld {
         alliesList.add(castleMine);
         enemyList.add(castleEnemy);
 
-        currentAlliesFront = alliesList.getFirst();
+        currentAlliesFront = alliesList.getFirst();     //target = castle
         currentEnemyFront = enemyList.getFirst();
+
+        allyGold = 0;
+        enemyGold = 0;
 
         output = new String("Game On");
     }
-    //dependecy injection inversion of control
-    //buttons class
-
     public void update(float delta){
+        goldIncome(delta);
         setFrontline();
-        for (Iterator<Unit> i = alliesList.iterator(); i.hasNext();) {
-            i.next().update(delta,currentEnemyFront);
+        for (int i = 0; i<alliesList.size();i++) {
+            alliesList.get(i).update(delta, currentEnemyFront);
         }
-        for (Iterator<Unit> i = enemyList.iterator(); i.hasNext();) {
-            i.next().update(delta,currentAlliesFront);
+        for (int i = 0; i < enemyList.size();i++) {
+            enemyList.get(i).update(delta, currentAlliesFront);
         }
         if(!dieing.isEmpty()){
-            for (Iterator<Unit> i = dieing.iterator(); i.hasNext();) {
-
-                if(!i.next().isDieing()){
-                    dieing.remove(i.next());
+            for (int i = 0; i < dieing.size();i++) {
+                if(!dieing.get(i).isDieing()){
+                    dieing.remove(i);
                 }
             }
         }
     }
+
+    private void goldIncome(float d) {
+        timeSinceLastIncome +=d;
+
+        while(timeSinceLastIncome>=incomeTime){
+            allyGold += allyIncome;
+            enemyGold += enemyIncome;
+            timeSinceLastIncome -= incomeTime;
+        }
+    }
+
     private void setFrontline() {
-        if(alliesList.isEmpty()){
-            output = "Enemy Win";
+        if (alliesList.isEmpty() || enemyList.isEmpty()) {
+            output = "Victory";
+            gameOver();
         }
         else {
             if (currentAlliesFront.isDead()) {
                 dieing.add(currentAlliesFront);
+
                 alliesList.remove(currentAlliesFront);
-                if(!alliesList.isEmpty()) {
-                    currentAlliesFront = alliesList.getFirst();
-                }
-                else {
+                if (!alliesList.isEmpty()) {
+                    currentAlliesFront = (alliesList.size() == 1) ?
+                            alliesList.get(0) : alliesList.get(1);
+                } else {
                     currentAlliesFront = null;
                 }
             }
-        }
-        if(enemyList.isEmpty()) {
-            output = "Allies Win";
-        }
-        else {
+
             if (currentEnemyFront.isDead()) {
                 dieing.add(currentEnemyFront);
                 enemyList.remove(currentEnemyFront);
-                if(!enemyList.isEmpty()){
-                    currentEnemyFront = enemyList.getFirst();
-                }
-                else {
+                if (!enemyList.isEmpty()) {
+                    currentEnemyFront = enemyList.size() == 1?
+                            enemyList.get(0):enemyList.get(1);
+                } else {
                     currentEnemyFront = null;
                 }
             }
         }
+    }
+    private void gameOver() {
+        buttonSpawnLeft.clearListeners();
+        buttonSpawnRight.clearListeners();
+
     }
     public void spawn(int spawnType,int spawnSide){
         switch (spawnSide){
@@ -148,6 +176,7 @@ public class GameWorld {
                 if(currentEnemyFront == castleEnemy){
                     currentEnemyFront = enemyList.getLast();
                 }
+                break;
             default:break;
 
         }
@@ -162,8 +191,10 @@ public class GameWorld {
         drawBackground();                               //BG and text
 
         stage.draw();                                   //BUTTONS
-                                                                    //TODO castles in lists - rework
-        castleMine.draw(batcher,runTime);               //Castles
+        for(int i = 0; i< dieing.size();i++){
+            dieing.get(i).draw(batcher, runTime);
+        }
+        castleMine.draw(batcher, runTime);               //Castles
         castleEnemy.draw(batcher,runTime);
         for(int i = 1 ; i < alliesList.size();i++){  //UNITS FURTHER
             alliesList.get(i).draw(batcher, runTime);
@@ -171,6 +202,7 @@ public class GameWorld {
         for(int i = 1 ; i < enemyList.size();i++){
             enemyList.get(i).draw(batcher, runTime);
         }
+
     }
     private void drawBackground() {
         batcher.begin();
@@ -178,38 +210,66 @@ public class GameWorld {
         batcher.draw(AssetLoader.background, 0, 0, screenWidth, screenHeight);
 
         AssetLoader.shadow.draw(batcher, "" + output, (screenWidth / 2)- 100, 50);
-        AssetLoader.font.draw(batcher, "" + output, (screenWidth / 2)- 100, 50);
+        AssetLoader.font.draw(batcher, "" + output, (screenWidth / 2) - 100, 50);
 
+        AssetLoader.shadow.draw(batcher, "" + enemyGold, (screenWidth) - 150, 50);
+        AssetLoader.font.draw(batcher, "" + enemyGold, (screenWidth) - 150, 50);
+
+        AssetLoader.shadow.draw(batcher, "" + allyGold, 100, 50);
+        AssetLoader.font.draw(batcher, "" + allyGold, 100, 50);
+
+        /*
+
+        if(currentEnemyFront != null) {
+        AssetLoader.shadow.draw(batcher, "" + currentEnemyFront.getX(), (screenWidth) - 150, 50);
+        AssetLoader.font.draw(batcher, "" + currentEnemyFront.getX(), (screenWidth) - 150, 50);
+        }
+        if(currentAlliesFront != null) {
+        AssetLoader.shadow.draw(batcher, "" + currentAlliesFront.getX(), 100, 50);
+        AssetLoader.font.draw(batcher, "" + currentAlliesFront.getX(), 100, 50);
+        }
+
+        *///Draw targets position
         batcher.end();
     }
     public void initObjects(Viewport v){
         initButton(v);
         stage = new Stage(v,batcher);
-        stage.addActor(buttonLeft);
-        stage.addActor(buttonRight);
+        stage.addActor(buttonSpawnLeft);
+        stage.addActor(buttonSpawnRight);
+        stage.addActor(buttonRestart);
 
     }
     private void initButton(final Viewport viewport) {
-        buttonLeft = new Button(AssetLoader.buttonTexture);
-        buttonRight = new Button(AssetLoader.buttonTexture);
+        buttonSpawnLeft = ColemButtons.createButton(0, screenHeight - 100, 100, 100,AssetLoader.buttonTexture);
+        buttonSpawnRight = ColemButtons.createButton(150, screenHeight - 100, 100, 100,AssetLoader.buttonTexture);
+        buttonRestart = ColemButtons.createButton(screenWidth/5,100,100,100,AssetLoader.buttonRestart);
 
-        buttonRight.setHeight(100);
-        buttonRight.setWidth(100);
-        buttonRight.setPosition(150, screenHeight - 100);
-        buttonRight.addListener(new ClickListener(){
+        buttonRestart.addListener(new ClickListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                spawn(1,2);
+                StartGame(viewport);
                 return true;
             }
         });
-        buttonLeft.setHeight(100);
-        buttonLeft.setWidth(100);
-        buttonLeft.setPosition(0, screenHeight - 100);
-        buttonLeft.addListener(new ClickListener() {
+
+        buttonSpawnRight.addListener(new ClickListener(){
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                spawn(1, 1);
+                if (enemyGold >= 10) {
+                    spawn(1, 2);
+                    enemyGold -= 10;                                             //TODO unit cost
+                }
+                return true;
+            }
+        });
+        buttonSpawnLeft.addListener(new ClickListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                if(allyGold >= 10) {
+                    spawn(1, 1);
+                    allyGold -= 10;
+                }
                 return true;
             }
         });
@@ -218,8 +278,4 @@ public class GameWorld {
     public Stage getStage() {
         return this.stage;
     }
-
-
-
-
 }
