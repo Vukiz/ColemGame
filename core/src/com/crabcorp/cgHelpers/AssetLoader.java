@@ -20,6 +20,7 @@ public class AssetLoader  {
     public static TextureRegion dead,fall;
 
 
+    public static TextureRegionDrawable buttonIncome;
     public static TextureRegionDrawable buttonRestart;
     public static TextureRegionDrawable buttonTexture;
 
@@ -69,7 +70,8 @@ public class AssetLoader  {
         background = new TextureRegion(backTextures,1,103,480,320);
 
         buttonTexture = new TextureRegionDrawable(new TextureRegion(backTextures,1,1,100,100));
-        buttonRestart = new TextureRegionDrawable(new TextureRegion(backTextures,785, 323,100, 100));
+        buttonRestart = new TextureRegionDrawable(new TextureRegion(backTextures,103, 1,100, 100));
+        buttonIncome = new TextureRegionDrawable(new TextureRegion(backTextures,785,323,100,100));
 
         TextureRegion knightMoving[] = {knightMove1,knightMove2,knightMove3};
         TextureRegion knightDieing[] = {fall,dead};

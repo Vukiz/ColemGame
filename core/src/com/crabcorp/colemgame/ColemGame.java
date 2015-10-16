@@ -7,12 +7,14 @@ import com.crabcorp.cgHelpers.AssetLoader;
 import com.crabcorp.screens.GameScreen;
 
 public class ColemGame extends Game{
+	public GameScreen gameScreen;
 
 	@Override
 	public void create() {
 		Gdx.app.log("ColemGame", "Created");
 		AssetLoader.load();
-		setScreen(new GameScreen());
+		gameScreen = new GameScreen();
+		setScreen(gameScreen);
 
 
 	}

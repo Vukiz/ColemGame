@@ -52,14 +52,14 @@ public class Knight implements Unit  {
         }
     }
 
-        public void setState() {
-        if(this.health <= 0){
-           this.setDieState();
-        }else {
-            if (this.target == null) {
+    public void setState() {
+        if (this.health <= 0) {
+            this.setDieState();
+        } else {
+            if (this.target.getClass() == Castle.class && this.target.isDead() ) {
                 this.setStayState();
             } else {
-                if (this.destination == DEST.RIGHT ? this.position.x < target.getX()-this.attackRange : this.position.x > target.getX() + this.attackRange) {
+                if (this.destination == DEST.RIGHT ? this.position.x < target.getX() - this.attackRange : this.position.x > target.getX() + this.attackRange) {
                     this.setMoveState();
                 } else {
                     this.setAttackState();

@@ -1,18 +1,22 @@
 package com.crabcorp.gameObjects;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.GdxBuild;
 import com.crabcorp.cgHelpers.AssetLoader;
 
 public class Castle implements Unit {
     private Vector2 position;
-    private int width = 200;
-    private int height = 200;
+    private int width;
+    private int height;
     private boolean dead = false;
     private int health = 2000;
 
-    public Castle(float x, float y){
+    public Castle(float x, float y,int width,int height){
+
+        this.width = width;
+        this.height = height;
         this.position = new Vector2(x,y);
 
     }
@@ -54,7 +58,7 @@ public class Castle implements Unit {
 
     public void draw(Batch batcher,float runTime){
         batcher.begin();
-        batcher.draw(AssetLoader.castle, this.position.x, this.position.y + 20, this.width, this.height); // ВЫРАВНИВАЮ С ФОНОМ
+        batcher.draw(AssetLoader.castle, this.position.x < 600? this.position.x - this.width:this.position.x, this.position.y, this.width, this.height); // ВЫРАВНИВАЮ С ФОНОМ
         batcher.end();
     }
 
