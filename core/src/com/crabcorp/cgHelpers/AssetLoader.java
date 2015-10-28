@@ -76,7 +76,7 @@ public class AssetLoader  {
         TextureRegion knightMoving[] = {knightMove1,knightMove2,knightMove3};
         TextureRegion knightDieing[] = {fall,dead};
 
-        knightAnimationDieing = new Animation(9,knightDieing);
+        knightAnimationDieing = new Animation(1.0f,knightDieing);
         knightAnimationDieing.setPlayMode(Animation.PlayMode.NORMAL);
 
         knightAnimationMoving = new Animation(0.2f,knightMoving);

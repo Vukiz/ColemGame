@@ -22,6 +22,9 @@ public class Castle implements Unit {
     }
 
     @Override
+    public void pause(){}
+
+    @Override
     public void hit(int damage) {
         this.health -= damage;
         if(this.health <= 0) this.die();

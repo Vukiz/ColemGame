@@ -17,7 +17,9 @@ public interface Unit  {
 
     public void die();
     public boolean isDieing();
+
+
+    public void pause();
 }
-    //TODO get rid of shitty dieing system -_-
     //TODO Randomize attack system
     //TODO actionbuttons???

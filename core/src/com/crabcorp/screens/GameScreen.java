@@ -7,7 +7,6 @@ import com.crabcorp.GameWorld.GameWorld;
 public class GameScreen implements Screen {
 
     private GameWorld world;
-    public boolean GamePaused = false;
     private float runTime = 0;
 
     public GameScreen() {
@@ -26,10 +25,8 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         runTime +=delta;
-        if(!GamePaused) {
-            world.update(delta);
-        }
-        world.render(runTime,GamePaused);
+        world.update(delta);
+        world.render(runTime);
     }
 
     @Override
@@ -50,13 +47,12 @@ public class GameScreen implements Screen {
     @Override
     public void pause() {
         Gdx.app.log("GameScreen", "pause called");
-        GamePaused = true;
+        world.setState(GameWorld.GameState.PAUSE);
     }
 
     @Override
     public void resume() {
         Gdx.app.log("GameScreen", "resume called");
-        GamePaused = false;
     }
 
     @Override

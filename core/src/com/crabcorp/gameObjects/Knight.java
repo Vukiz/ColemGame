@@ -9,10 +9,17 @@ import com.crabcorp.cgHelpers.AssetLoader;
 public class Knight implements Unit  {
     private Vector2 position;
     private Vector2 velocity;
-    public enum DEST  {LEFT,RIGHT};
-    public enum STATE {MOVE,ATTACK,DIE,STAY}
-    public boolean dead = false;
-    public boolean dieing = false;
+
+    public enum DEST  {
+        LEFT,RIGHT
+    }
+    public enum STATE {
+        MOVE,ATTACK,DIE,STAY
+    }
+    public boolean dead = false;  // для проверки мертв ли target
+    public boolean dieing = false; //для отрисовки анимации смерти
+
+    private boolean isPaused = false;
 
     private final int width = 80;
     private final int height = 100;
@@ -39,6 +46,10 @@ public class Knight implements Unit  {
         }
 
     }
+    public void updatePause(boolean isUnpaused){
+
+
+    }
     public void update(float delta,Unit gTarget){
         this.target = gTarget;
         this.setState();
@@ -51,22 +62,29 @@ public class Knight implements Unit  {
                 break;
         }
     }
-
     public void setState() {
+        if(this.isPaused){
+            this.setStayState();
+            return;
+        }
         if (this.health <= 0) {
             this.setDieState();
-        } else {
-            if (this.target.getClass() == Castle.class && this.target.isDead() ) {
-                this.setStayState();
-            } else {
-                if (this.destination == DEST.RIGHT ? this.position.x < target.getX() - this.attackRange : this.position.x > target.getX() + this.attackRange) {
-                    this.setMoveState();
-                } else {
-                    this.setAttackState();
-                }
-            }
+            return;
         }
+        if (this.destination == DEST.RIGHT ? this.position.x < target.getX() - this.attackRange : this.position.x > target.getX() + this.attackRange) {
+            this.setMoveState();
+            return;
+        }
+        this.setAttackState();
+        return;
+
     }
+
+    @Override
+    public void pause() {
+        this.isPaused = true;
+    }
+
 
     public void setStayState() {
         this.velocity = new Vector2(0, 0);
@@ -101,17 +119,6 @@ public class Knight implements Unit  {
     private void actionMOVE(float delta) {
         this.position.add(velocity.cpy().scl(delta));
     }
-
-    @Override
-    public synchronized void  hit(int damage) {
-        this.health -= damage;
-    }
-
-    @Override
-    public void die() {
-
-    }
-
     public void draw (Batch batch, float runTime){
         batch.begin();
         switch (this.currentState){
@@ -126,11 +133,13 @@ public class Knight implements Unit  {
                 if(startTime == 0){
                     startTime = runTime;
                 }
-                currentTimeElapsed = runTime;
                 drawTexture(batch, AssetLoader.knightAnimationDieing.getKeyFrame(runTime), runTime);
+
+                currentTimeElapsed = runTime;
                 fadeTime += currentTimeElapsed - startTime;
                 if(fadeTime >= 4){
                     this.dieing = false;
+                    startTime = 0;
                 }
                 startTime = runTime;
                 break;
@@ -139,7 +148,6 @@ public class Knight implements Unit  {
         }
         batch.end();
     }
-
     private void drawTexture(Batch batcher, TextureRegion keyFrame,float runTime) {
         batcher.draw(keyFrame,
                 this.destination == DEST.RIGHT ? this.position.x : this.position.x + this.width,
@@ -147,7 +155,6 @@ public class Knight implements Unit  {
                 this.destination == DEST.RIGHT ? this.width : -this.width,
                 this.height);
     }
-
     public boolean isDieing(){
         return this.dieing;
     }
@@ -163,11 +170,18 @@ public class Knight implements Unit  {
     public int getWidth() {
         return this.width;
     }
+    public DEST getDestination() {
+        return this.destination;
+    }
+
     @Override
     public boolean isDead() {
         return this.dead;
     }
-    public DEST getDestination() {
-        return this.destination;
+    @Override
+     public synchronized void  hit(int damage) {
+        this.health -= damage;
     }
+    @Override
+    public void die() {}
 }
