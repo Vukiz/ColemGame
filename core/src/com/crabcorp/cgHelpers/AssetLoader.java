@@ -22,7 +22,10 @@ public class AssetLoader  {
 
     public static TextureRegionDrawable buttonIncome;
     public static TextureRegionDrawable buttonRestart;
-    public static TextureRegionDrawable buttonTexture;
+    public static TextureRegionDrawable buttonSpawn;
+    public static TextureRegionDrawable buttonUnpause;
+    public static TextureRegionDrawable buttonMenu;
+    public static TextureRegion menuLayout;
 
     public static BitmapFont font;
     public static BitmapFont shadow;
@@ -67,12 +70,6 @@ public class AssetLoader  {
         knightAttack2 = new TextureRegion(knightTexture,1, 303, 300, 300);//bam
         knightAttack2.flip(false, true);
 
-        background = new TextureRegion(backTextures,1,103,480,320);
-
-        buttonTexture = new TextureRegionDrawable(new TextureRegion(backTextures,1,1,100,100));
-        buttonRestart = new TextureRegionDrawable(new TextureRegion(backTextures,103, 1,100, 100));
-        buttonIncome = new TextureRegionDrawable(new TextureRegion(backTextures,785,323,100,100));
-
         TextureRegion knightMoving[] = {knightMove1,knightMove2,knightMove3};
         TextureRegion knightDieing[] = {fall,dead};
 
@@ -84,13 +81,21 @@ public class AssetLoader  {
 
         TextureRegion knightAttacking[] = {knightAttack,knightAttack2};
 
-        //TODO attack animation fix
 
         knightAnimationAttack = new Animation(0.5f,knightAttacking);
         knightAnimationAttack.setPlayMode(Animation.PlayMode.LOOP);
 
-        castle = new TextureRegion(backTextures,483,123,300,300);
+        castle = new TextureRegion(backTextures,483,173,300,300);
         castle.flip(false, true);
+
+        background = new TextureRegion(backTextures,1,153,480,320);
+
+        menuLayout = new TextureRegion(backTextures,1,1,300,150);
+        buttonSpawn = new TextureRegionDrawable(new TextureRegion(backTextures,303,51,100,100));
+        buttonRestart = new TextureRegionDrawable(new TextureRegion(backTextures,887, 373,100, 100));
+        buttonIncome = new TextureRegionDrawable(new TextureRegion(backTextures,785,373,100,100));
+        buttonMenu = new TextureRegionDrawable(new TextureRegion(backTextures,785,271,100,100));
+        buttonUnpause = new TextureRegionDrawable(new TextureRegion(backTextures,887,271,100,100));
 
 
     }

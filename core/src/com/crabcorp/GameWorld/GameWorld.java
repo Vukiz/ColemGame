@@ -4,13 +4,15 @@ package com.crabcorp.GameWorld;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -20,12 +22,8 @@ import com.crabcorp.gameObjects.Castle;
 import com.crabcorp.gameObjects.Spawner;
 import com.crabcorp.gameObjects.Unit;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 
-/**
- * Created by Евгений on 29.09.2015.
- */
 public class GameWorld {
     //screen
     private float screenWidth;
@@ -39,6 +37,8 @@ public class GameWorld {
     private Button buttonSpawnRight;
     private Button buttonRestart;
     private Button buttonUnpause;
+    private Button buttonMenu;
+    private Table menuPopup;
     //units
     private LinkedList<Unit> alliesList;
     private LinkedList<Unit> enemyList;
@@ -71,19 +71,19 @@ public class GameWorld {
     private EventListener StartGameListener;
 
     public enum GameState {
-        PAUSE, GAMEOVER,GAMEON,READY
+        PAUSE, GAMEOVER, GAMEON, READY
     }
 
     public GameWorld(float width, float height) {
         screenWidth = width;
         screenHeight = height;
         //TODO SCALE UNITS SIZE BY PERCENTAGES
-        castleWidth = (int)screenWidth / 10;
-        castleHeight = (int)screenHeight / 4;
+        castleWidth = (int) screenWidth / 10;
+        castleHeight = (int) screenHeight / 4;
         castleMinePosX = castleWidth;
-        castleMinePosY = screenHeight - 2*castleHeight;
+        castleMinePosY = screenHeight - 2 * castleHeight;
         castleEnemyPosX = screenWidth - castleWidth;
-        castleEnemyPosY = screenHeight - 2*castleHeight;
+        castleEnemyPosY = screenHeight - 2 * castleHeight;
 
         cam = new OrthographicCamera();
         cam.setToOrtho(true, screenWidth, screenHeight);
@@ -113,8 +113,8 @@ public class GameWorld {
         enemyList = new LinkedList<Unit>();
         dieing = new LinkedList<Unit>();
 
-        castleMine = Spawner.spawnCastle(castleMinePosX, castleMinePosY,castleWidth,castleHeight);
-        castleEnemy = Spawner.spawnCastle(castleEnemyPosX, castleEnemyPosY,castleWidth,castleHeight);
+        castleMine = Spawner.spawnCastle(castleMinePosX, castleMinePosY, castleWidth, castleHeight);
+        castleEnemy = Spawner.spawnCastle(castleEnemyPosX, castleEnemyPosY, castleWidth, castleHeight);
 
         alliesList.add(castleMine);
         enemyList.add(castleEnemy);
@@ -134,17 +134,16 @@ public class GameWorld {
 
     public void setState(GameState state) {
 
-        switch(state){
+        switch (state) {
             case PAUSE:
-                if(this.currentState != GameState.GAMEOVER){
+                if (this.currentState != GameState.GAMEOVER) {
                     this.currentState = state;
                     Gdx.app.log("ColemGame-StateChanger", "State changed to PAUSE");
-                    output = "Tap to start";
+                    output = "Paused";
 
                     buttonSpawnLeft.setTouchable(Touchable.disabled);
                     buttonSpawnRight.setTouchable(Touchable.disabled);
-                    buttonRestart.setTouchable(Touchable.disabled);
-                    stage.addActor(buttonUnpause);
+                    Gdx.app.log("ColemGame-StateChanger", "Buttons : left,right,restart - disabled");
                 }
                 break;
             case READY:
@@ -180,8 +179,9 @@ public class GameWorld {
                 break;
         }
     }
+
     public void update(float delta) {
-        switch(currentState) {
+        switch (currentState) {
             case GAMEON:
                 AIMove(delta);
                 goldIncome(delta);
@@ -216,14 +216,14 @@ public class GameWorld {
     private void AIMove(float delta) {
 
         AImoveCD += delta;
-        if(enemyIncome >= 30){
+        if (enemyIncome >= 30) {
             if (AImoveCD >= 1 && enemyGold >= 10) {
                 Gdx.app.log("ColemGame-EnemyAI", "Knight called");
                 spawn(1, 2);
                 enemyGold -= 10;
                 AImoveCD = 0;
             }
-        }else {
+        } else {
             if (AImoveCD >= 1 && enemyGold >= 10 && enemyList.size() <= alliesList.size()) {
                 Gdx.app.log("ColemGame-EnemyAI", "Knight called");
                 spawn(1, 2);
@@ -253,7 +253,7 @@ public class GameWorld {
             if (currentAlliesFront.isDead()) currentAlliesFront = castleMine;
             if (currentEnemyFront.isDead()) currentEnemyFront = castleEnemy;
 
-            for (Unit i :alliesList) {
+            for (Unit i : alliesList) {
                 if (i.isDead()) {
                     dieing.add(i);
                 } else {
@@ -271,7 +271,7 @@ public class GameWorld {
                     }
                 }
             }
-            for(Unit i : dieing) {
+            for (Unit i : dieing) {
                 alliesList.remove(i);
                 enemyList.remove(i);
             }
@@ -279,43 +279,45 @@ public class GameWorld {
     }
 
     private void goldIncome(float d) {
-        timeSinceLastIncome +=d;
-        while(timeSinceLastIncome>=incomeTime){
+        timeSinceLastIncome += d;
+        while (timeSinceLastIncome >= incomeTime) {
             allyGold += allyIncome;
             enemyGold += enemyIncome;
             timeSinceLastIncome -= incomeTime;
         }
     }
 
-    private void increaseIncomeAl(){
-        if(allyGold >= 30){
+    private void increaseIncomeAl() {
+        if (allyGold >= 30) {
             allyGold -= 30;
             allyIncome += 5;
         }
     }
-    private void increaseIncomeEn(){
-        if(enemyGold >= 30) {
+
+    private void increaseIncomeEn() {
+        if (enemyGold >= 30) {
             Gdx.app.log("ColemGame-EnemyAI", "Income Increased");
             enemyGold -= 30;
             enemyIncome += 5;
         }
     }
 
-    public void spawn(int spawnType,int spawnSide){
-        switch (spawnSide){
+    public void spawn(int spawnType, int spawnSide) {
+        switch (spawnSide) {
             case 1:
-                alliesList.add(Spawner.spawnKnight(castleMinePosX,castleMinePosY + castleHeight/2+ castleHeight/ 5,false));   // castle size == 200.200
-                if(currentAlliesFront == castleMine){
+                alliesList.add(Spawner.spawnKnight(castleMinePosX, castleMinePosY + castleHeight / 2 + castleHeight / 5, false));   // castle size == 200.200
+                if (currentAlliesFront == castleMine) {
                     currentAlliesFront = alliesList.getLast();
                 }
                 break;
             case 2:
-                enemyList.add(Spawner.spawnKnight(castleEnemyPosX,castleEnemyPosY + castleHeight/2 + castleHeight/ 5,true)); //true == enemy
-                if(currentEnemyFront == castleEnemy){
+                enemyList.add(Spawner.spawnKnight(castleEnemyPosX, castleEnemyPosY + castleHeight / 2 + castleHeight / 5, true)); //true == enemy
+                if (currentEnemyFront == castleEnemy) {
                     currentEnemyFront = enemyList.getLast();
                 }
                 break;
-            default:break;
+            default:
+                break;
 
         }
     }
@@ -326,7 +328,7 @@ public class GameWorld {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         drawBackground();                              //BG and text
         stage.draw();
-        switch(currentState) {
+        switch (currentState) {
             case GAMEON:
             case READY:
             case GAMEOVER:
@@ -339,7 +341,7 @@ public class GameWorld {
                 for (Unit i : dieing) {
                     i.draw(batcher, runTime);
                 }
-            break;
+                break;
             case PAUSE:
                 for (Unit i : alliesList) {
                     i.draw(batcher, 0);
@@ -353,6 +355,7 @@ public class GameWorld {
                 break;
         }
     }
+
     private void drawBackground() {
         batcher.begin();
 
@@ -382,23 +385,44 @@ public class GameWorld {
      *///Draw targets position
         batcher.end();
     }
-    public void initObjects(Viewport v){
+
+    public void initObjects(Viewport v) {
+
+        menuPopup = new Table(){
+            @Override
+            public void draw(Batch batch, float parentAlpha) {
+                batch.draw(AssetLoader.menuLayout,
+                        menuPopup.getX(), menuPopup.getY(),
+                        menuPopup.getWidth(), menuPopup.getHeight());
+                super.draw(batch, parentAlpha);
+
+            }
+        };
+        menuPopup.setBounds(screenWidth / 2 - 150, screenHeight / 2 - 150, 300, 150);
+
         initButton();
-        stage = new Stage(v,batcher);
+        stage = new Stage(v, batcher);
         stage.addActor(buttonSpawnLeft);
         stage.addActor(buttonSpawnRight);
-        stage.addActor(buttonRestart);
+        stage.addActor(buttonMenu);
+
+        menuPopup.addActor(buttonUnpause);
+        menuPopup.addActor(buttonRestart);
 
     }
-    private void initButton() {
-        buttonSpawnLeft = ColemButtons.createButton(0, screenHeight - 100, 100, 100,AssetLoader.buttonTexture);
-        buttonSpawnRight = ColemButtons.createButton(150, screenHeight - 100, 100, 100,AssetLoader.buttonIncome);
-        buttonRestart = ColemButtons.createButton(screenWidth/5,100,100,100,AssetLoader.buttonRestart);
-        buttonUnpause = ColemButtons.createButton(screenWidth/2, screenHeight/2, 100, 100, AssetLoader.buttonRestart);
 
+    private void initButton() {
+        buttonSpawnLeft = ColemButtons.createButton(0, screenHeight - 100, 100, 100, AssetLoader.buttonSpawn);
+        buttonSpawnRight = ColemButtons.createButton(150, screenHeight - 100, 100, 100, AssetLoader.buttonIncome);
+
+        buttonMenu = ColemButtons.createButton(screenWidth - 200, 100, 100, 100, AssetLoader.buttonMenu);
+        buttonRestart = ColemButtons.createButton(150, 0, 100, 100, AssetLoader.buttonRestart);
+        buttonUnpause = ColemButtons.createButton(0,0, 100, 100, AssetLoader.buttonUnpause);
         buttonRestart.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.log("ColemGame-Listeners","  restart clicked");
+                menuPopup.remove();
                 StartGame();
             }
         });
@@ -422,15 +446,24 @@ public class GameWorld {
         buttonUnpause.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.log("ColemGame-Listeners","  unpause clicked");
                 setState(GameState.GAMEON);
-                buttonUnpause.remove();
+                menuPopup.remove();
+            }
+        });
+        buttonMenu.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                stage.addActor(menuPopup);
+                setState(GameState.PAUSE);
             }
         });
     }
 
-    public Stage getStage() {
-        return this.stage;
-    }
+        public Stage getStage() {
+            return this.stage;
+        }
 
 
 }
+
