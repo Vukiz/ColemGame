@@ -81,9 +81,9 @@ public class GameWorld {
         castleWidth = (int) screenWidth / 10;
         castleHeight = (int) screenHeight / 4;
         castleMinePosX = castleWidth;
-        castleMinePosY = screenHeight - 2 * castleHeight;
+        castleMinePosY = screenHeight - 2 * castleHeight + screenHeight / 20;
         castleEnemyPosX = screenWidth - castleWidth;
-        castleEnemyPosY = screenHeight - 2 * castleHeight;
+        castleEnemyPosY = screenHeight - 2 * castleHeight + screenHeight / 20;
 
         cam = new OrthographicCamera();
         cam.setToOrtho(true, screenWidth, screenHeight);
@@ -211,7 +211,6 @@ public class GameWorld {
         }
 
     }
-    //TODO create ally ai? like merging incincrease,spawns,updates,renders
 
     private void AIMove(float delta) {
 
@@ -416,8 +415,8 @@ public class GameWorld {
         buttonSpawnRight = ColemButtons.createButton(150, screenHeight - 100, 100, 100, AssetLoader.buttonIncome);
 
         buttonMenu = ColemButtons.createButton(screenWidth - 200, 100, 100, 100, AssetLoader.buttonMenu);
-        buttonRestart = ColemButtons.createButton(150, 0, 100, 100, AssetLoader.buttonRestart);
-        buttonUnpause = ColemButtons.createButton(0,0, 100, 100, AssetLoader.buttonUnpause);
+        buttonRestart = ColemButtons.createButton(150, 20, 100, 100, AssetLoader.buttonRestart);
+        buttonUnpause = ColemButtons.createButton(20,20, 100, 100, AssetLoader.buttonUnpause);
         buttonRestart.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
