@@ -16,10 +16,12 @@ public class Knight implements Unit  {
     public enum STATE {
         MOVE,ATTACK,DIE,STAY
     }
-    public boolean dead = false;  // для проверки мертв ли target
-    public boolean dieing = false; //для отрисовки анимации смерти
+    private boolean dead = false;  // для проверки мертв ли target
+    private boolean dieing = false; //для отрисовки анимации смерти
 
     private boolean isPaused = false;
+
+    public static final int cost = 5; // стоимость рыцаря
 
     private final int width = 80;
     private final int height = 100;
@@ -46,10 +48,6 @@ public class Knight implements Unit  {
         }
 
     }
-    public void updatePause(boolean isUnpaused){
-
-
-    }
     public void update(float delta,Unit gTarget){
         this.target = gTarget;
         this.setState();
@@ -71,7 +69,9 @@ public class Knight implements Unit  {
             this.setDieState();
             return;
         }
-        if (this.destination == DEST.RIGHT ? this.position.x < target.getX() - this.attackRange : this.position.x > target.getX() + this.attackRange) {
+        if (this.destination == DEST.RIGHT ?
+                this.position.x < target.getX() - this.attackRange :
+                this.position.x > target.getX() + this.attackRange) {
             this.setMoveState();
             return;
         }

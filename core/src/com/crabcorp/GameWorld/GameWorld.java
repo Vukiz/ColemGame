@@ -19,6 +19,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.crabcorp.buttons.ColemButtons;
 import com.crabcorp.cgHelpers.AssetLoader;
 import com.crabcorp.gameObjects.Castle;
+import com.crabcorp.gameObjects.Gold;
+import com.crabcorp.gameObjects.Knight;
 import com.crabcorp.gameObjects.Spawner;
 import com.crabcorp.gameObjects.Unit;
 
@@ -48,24 +50,21 @@ public class GameWorld {
     private Unit currentEnemyFront;
     private Castle castleMine;
     private Castle castleEnemy;
+
     private final float castleMinePosX;
     private final float castleMinePosY;
     private final float castleEnemyPosX;
     private final float castleEnemyPosY;
     private int castleWidth;
     private int castleHeight;
+
     //time & income
-    private final float incomeTime = 4;
-    private float timeSinceLastIncome = 0;
-    private float AImoveCD = 0;
+    private float AImoveCD = 0; // общий для инкам и спауна
+
     private long btnCooldown = 0;
 
-    private int allyGold = 10;
-    private int enemyGold = 10;
-    private int allyIncome = 10;
-    private int enemyIncome = 10;
-
-
+    private Gold allyGold;
+    private Gold enemyGold;
     private String output;
     private GameState currentState;
     private EventListener StartGameListener;
@@ -122,12 +121,8 @@ public class GameWorld {
         currentAlliesFront = castleMine;     //target = castle
         currentEnemyFront = castleEnemy;
 
-        allyGold = 30;
-        enemyGold = 30;
-
-        allyIncome = 10;
-        enemyIncome = 10;
-
+        allyGold = new Gold();
+        enemyGold = new Gold();
         setState(GameState.READY);
 
     }
@@ -181,10 +176,13 @@ public class GameWorld {
     }
 
     public void update(float delta) {
+        allyGold.resetChange();
+        enemyGold.resetChange();
         switch (currentState) {
             case GAMEON:
                 AIMove(delta);
-                goldIncome(delta);
+                allyGold.goldIncome(delta);
+                enemyGold.goldIncome(delta);
 
                 setFrontline();
                 for (Unit i : alliesList) {
@@ -209,28 +207,23 @@ public class GameWorld {
             case READY:
                 break;
         }
-
+        if(allyGold.getChange() != 0){
+            
+        }
     }
 
     private void AIMove(float delta) {
 
         AImoveCD += delta;
-        if (enemyIncome >= 30) {
-            if (AImoveCD >= 1 && enemyGold >= 10) {
-                Gdx.app.log("ColemGame-EnemyAI", "Knight called");
+        if (enemyGold.getIncome() >= 30) {
+            spawn(1,2);
+        }
+        else {
+            if (enemyList.size() <= alliesList.size()) {
                 spawn(1, 2);
-                enemyGold -= 10;
-                AImoveCD = 0;
-            }
-        } else {
-            if (AImoveCD >= 1 && enemyGold >= 10 && enemyList.size() <= alliesList.size()) {
-                Gdx.app.log("ColemGame-EnemyAI", "Knight called");
-                spawn(1, 2);
-                enemyGold -= 10;
-                AImoveCD = 0;
             }
             if (AImoveCD >= 1) {
-                increaseIncomeEn();
+                enemyGold.tryToIncrease();
                 AImoveCD = 0;
             }
         }
@@ -255,6 +248,7 @@ public class GameWorld {
             for (Unit i : alliesList) {
                 if (i.isDead()) {
                     dieing.add(i);
+                    enemyGold.increaseGold(Knight.cost);
                 } else {
                     if (i.getX() > currentAlliesFront.getX()) {
                         currentAlliesFront = i;
@@ -264,6 +258,7 @@ public class GameWorld {
             for (Unit i : enemyList) {
                 if (i.isDead()) {
                     dieing.add(i);
+                    allyGold.increaseGold(Knight.cost);
                 } else {
                     if (i.getX() < currentEnemyFront.getX()) {
                         currentEnemyFront = i;
@@ -277,42 +272,30 @@ public class GameWorld {
         }
     }
 
-    private void goldIncome(float d) {
-        timeSinceLastIncome += d;
-        while (timeSinceLastIncome >= incomeTime) {
-            allyGold += allyIncome;
-            enemyGold += enemyIncome;
-            timeSinceLastIncome -= incomeTime;
-        }
-    }
 
-    private void increaseIncomeAl() {
-        if (allyGold >= 30) {
-            allyGold -= 30;
-            allyIncome += 5;
-        }
-    }
-
-    private void increaseIncomeEn() {
-        if (enemyGold >= 30) {
-            Gdx.app.log("ColemGame-EnemyAI", "Income Increased");
-            enemyGold -= 30;
-            enemyIncome += 5;
-        }
-    }
 
     public void spawn(int spawnType, int spawnSide) {
         switch (spawnSide) {
             case 1:
-                alliesList.add(Spawner.spawnKnight(castleMinePosX, castleMinePosY + castleHeight / 2 + castleHeight / 5, false));   // castle size == 200.200
+                alliesList.add(Spawner.spawnKnight(castleMinePosX,
+                        castleMinePosY + castleHeight / 2 + castleHeight / 5,
+                        false));
                 if (currentAlliesFront == castleMine) {
                     currentAlliesFront = alliesList.getLast();
                 }
                 break;
             case 2:
-                enemyList.add(Spawner.spawnKnight(castleEnemyPosX, castleEnemyPosY + castleHeight / 2 + castleHeight / 5, true)); //true == enemy
-                if (currentEnemyFront == castleEnemy) {
-                    currentEnemyFront = enemyList.getLast();
+                if (AImoveCD >= 1 && enemyGold.getValue() >= 10) {
+                    Gdx.app.log("ColemGame-EnemyAI", "Knight called");
+                    enemyGold.increaseGold(-10);
+                    AImoveCD = 0;
+
+                    enemyList.add(Spawner.spawnKnight(castleEnemyPosX,
+                            castleEnemyPosY + castleHeight / 2 + castleHeight / 5,
+                            true));
+                    if (currentEnemyFront == castleEnemy) {
+                        currentEnemyFront = enemyList.getLast();
+                    }
                 }
                 break;
             default:
@@ -327,6 +310,7 @@ public class GameWorld {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         drawBackground();                              //BG and text
         stage.draw();
+
         switch (currentState) {
             case GAMEON:
             case READY:
@@ -428,16 +412,16 @@ public class GameWorld {
         buttonSpawnRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                increaseIncomeAl();
+                allyGold.tryToIncrease();
             }
         });
         buttonSpawnLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (allyGold >= 10 && System.currentTimeMillis() - btnCooldown > 1000) {
+                if (allyGold.getValue() >= 10 && System.currentTimeMillis() - btnCooldown > 1000) {
                     btnCooldown = System.currentTimeMillis();
                     spawn(1, 1);
-                    allyGold -= 10;
+                    allyGold.increaseGold(-10);
                 }
             }
         });
