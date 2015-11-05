@@ -1,4 +1,4 @@
-package com.crabcorp.gameObjects;
+package com.crabcorp.gameObjects.CurrencyThings;
 
 import com.badlogic.gdx.Gdx;
 

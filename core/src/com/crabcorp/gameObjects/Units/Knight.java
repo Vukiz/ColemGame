@@ -1,12 +1,11 @@
-package com.crabcorp.gameObjects;
+package com.crabcorp.gameObjects.Units;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.crabcorp.GameWorld.GameWorld;
 import com.crabcorp.cgHelpers.AssetLoader;
 
-public class Knight implements Unit  {
+public class Knight implements com.crabcorp.gameObjects.Units.Unit {
     private Vector2 position;
     private Vector2 velocity;
 
@@ -33,7 +32,7 @@ public class Knight implements Unit  {
     private int health = 1000;
     private DEST destination = DEST.RIGHT;
     private STATE currentState = STATE.MOVE;
-    private Unit target = null;
+    private com.crabcorp.gameObjects.Units.Unit target = null;
     private float attackCooldown = 0;
     private float startTime = 0,currentTimeElapsed = 0,fadeTime = 0;
 
@@ -47,7 +46,7 @@ public class Knight implements Unit  {
             this.destination = DEST.LEFT;
         }
     }
-    public void update(float delta,Unit gTarget){
+    public void update(float delta, com.crabcorp.gameObjects.Units.Unit gTarget){
         this.target = gTarget;
         this.setState();
         switch (this.currentState){

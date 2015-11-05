@@ -1,4 +1,4 @@
-package com.crabcorp.gameObjects;
+package com.crabcorp.gameObjects.Units;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 

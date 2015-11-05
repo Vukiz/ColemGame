@@ -1,12 +1,10 @@
-package com.crabcorp.gameObjects;
+package com.crabcorp.gameObjects.Units;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.GdxBuild;
 import com.crabcorp.cgHelpers.AssetLoader;
 
-public class Castle implements Unit {
+public class Castle implements com.crabcorp.gameObjects.Units.Unit {
     private Vector2 position;
     private int width;
     private int height;
@@ -35,7 +33,7 @@ public class Castle implements Unit {
         this.dead = true;
     }
 
-    public void update(float delta,Unit target){};
+    public void update(float delta, com.crabcorp.gameObjects.Units.Unit target){};
     public float getX(){
         return this.position.x;
     }

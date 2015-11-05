@@ -1,4 +1,4 @@
-package com.crabcorp.gameObjects;
+package com.crabcorp.gameObjects.CurrencyThings;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;

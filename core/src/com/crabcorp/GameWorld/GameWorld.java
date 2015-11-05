@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -18,12 +17,12 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.crabcorp.buttons.ColemButtons;
 import com.crabcorp.cgHelpers.AssetLoader;
-import com.crabcorp.gameObjects.Castle;
-import com.crabcorp.gameObjects.Gold;
-import com.crabcorp.gameObjects.Knight;
+import com.crabcorp.gameObjects.Units.Castle;
+import com.crabcorp.gameObjects.CurrencyThings.Gold;
+import com.crabcorp.gameObjects.Units.Knight;
 import com.crabcorp.gameObjects.Spawner;
-import com.crabcorp.gameObjects.Unit;
-import com.crabcorp.gameObjects.ValueChange;
+import com.crabcorp.gameObjects.Units.Unit;
+import com.crabcorp.gameObjects.CurrencyThings.ValueChange;
 
 import java.util.LinkedList;
 
