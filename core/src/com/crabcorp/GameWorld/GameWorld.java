@@ -176,8 +176,6 @@ public class GameWorld {
     }
 
     public void update(float delta) {
-        allyGold.resetChange();
-        enemyGold.resetChange();
         switch (currentState) {
             case GAMEON:
                 AIMove(delta);
@@ -206,9 +204,6 @@ public class GameWorld {
                 break;
             case READY:
                 break;
-        }
-        if(allyGold.getChange() != 0){
-            
         }
     }
 
@@ -280,6 +275,8 @@ public class GameWorld {
                 alliesList.add(Spawner.spawnKnight(castleMinePosX,
                         castleMinePosY + castleHeight / 2 + castleHeight / 5,
                         false));
+                allyGold.increaseGold(-10);
+
                 if (currentAlliesFront == castleMine) {
                     currentAlliesFront = alliesList.getLast();
                 }
@@ -421,7 +418,6 @@ public class GameWorld {
                 if (allyGold.getValue() >= 10 && System.currentTimeMillis() - btnCooldown > 1000) {
                     btnCooldown = System.currentTimeMillis();
                     spawn(1, 1);
-                    allyGold.increaseGold(-10);
                 }
             }
         });
