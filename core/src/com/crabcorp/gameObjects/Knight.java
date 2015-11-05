@@ -46,7 +46,6 @@ public class Knight implements Unit  {
             this.velocity.rotate(180);
             this.destination = DEST.LEFT;
         }
-
     }
     public void update(float delta,Unit gTarget){
         this.target = gTarget;

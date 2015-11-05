@@ -23,6 +23,7 @@ import com.crabcorp.gameObjects.Gold;
 import com.crabcorp.gameObjects.Knight;
 import com.crabcorp.gameObjects.Spawner;
 import com.crabcorp.gameObjects.Unit;
+import com.crabcorp.gameObjects.ValueChange;
 
 import java.util.LinkedList;
 
@@ -45,7 +46,7 @@ public class GameWorld {
     private LinkedList<Unit> alliesList;
     private LinkedList<Unit> enemyList;
     private LinkedList<Unit> dieing;
-
+    private LinkedList<ValueChange> changes;
     private Unit currentAlliesFront;
     private Unit currentEnemyFront;
     private Castle castleMine;
@@ -62,7 +63,6 @@ public class GameWorld {
     private float AImoveCD = 0; // общий для инкам и спауна
 
     private long btnCooldown = 0;
-
     private Gold allyGold;
     private Gold enemyGold;
     private String output;
@@ -111,6 +111,7 @@ public class GameWorld {
         alliesList = new LinkedList<Unit>();
         enemyList = new LinkedList<Unit>();
         dieing = new LinkedList<Unit>();
+        changes = new LinkedList<ValueChange>();
 
         castleMine = Spawner.spawnCastle(castleMinePosX, castleMinePosY, castleWidth, castleHeight);
         castleEnemy = Spawner.spawnCastle(castleEnemyPosX, castleEnemyPosY, castleWidth, castleHeight);
@@ -181,7 +182,6 @@ public class GameWorld {
                 AIMove(delta);
                 allyGold.goldIncome(delta);
                 enemyGold.goldIncome(delta);
-
                 setFrontline();
                 for (Unit i : alliesList) {
                     i.update(delta, currentEnemyFront);
@@ -189,13 +189,11 @@ public class GameWorld {
                 for (Unit i : enemyList) {
                     i.update(delta, currentAlliesFront);
                 }
-
-                if (!dieing.isEmpty())
-                    for (int i = 0; i < dieing.size(); i++) {
-                        if (!dieing.get(i).isDieing()) {
-                            dieing.remove(i);
-                        }
+                for (int i = 0; i < dieing.size(); i++) {
+                    if (!dieing.get(i).isDieing()) {
+                        dieing.remove(i);
                     }
+                }
 
                 break;
             case PAUSE:
@@ -204,6 +202,23 @@ public class GameWorld {
                 break;
             case READY:
                 break;
+        }
+        for (ValueChange i : changes){
+            i.update(delta);
+        }
+        for (int i = 0; i < changes.size(); i++){
+            if(changes.get(i).mustBeRemoved()){
+                changes.remove(i);
+            }
+        }
+        int allyChange = allyGold.getChange();
+        int enemyChange = enemyGold.getChange();
+
+        if(allyChange!= 0) {
+            changes.add(new ValueChange(allyChange, 150, 90));
+        }
+        if(enemyChange != 0) {
+            changes.add(new ValueChange(enemyChange, (screenWidth) - 150, 90));
         }
     }
 
@@ -266,9 +281,6 @@ public class GameWorld {
             }
         }
     }
-
-
-
     public void spawn(int spawnType, int spawnSide) {
         switch (spawnSide) {
             case 1:
@@ -307,7 +319,9 @@ public class GameWorld {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         drawBackground();                              //BG and text
         stage.draw();
-
+        for(ValueChange i : changes){
+            i.draw(batcher);
+        }
         switch (currentState) {
             case GAMEON:
             case READY:
@@ -344,11 +358,11 @@ public class GameWorld {
         AssetLoader.shadow.draw(batcher, "" + output, (screenWidth / 2) - 100, 50);
         AssetLoader.font.draw(batcher, "" + output, (screenWidth / 2) - 100, 50);
 
-        AssetLoader.shadow.draw(batcher, "" + enemyGold, (screenWidth) - 150, 50);
-        AssetLoader.font.draw(batcher, "" + enemyGold, (screenWidth) - 150, 50);
+        AssetLoader.shadow.draw(batcher, "" + enemyGold.getValue(), (screenWidth) - 150, 50);
+        AssetLoader.font.draw(batcher, "" + enemyGold.getValue(), (screenWidth) - 150, 50);
 
-        AssetLoader.shadow.draw(batcher, "" + allyGold, 100, 50);
-        AssetLoader.font.draw(batcher, "" + allyGold, 100, 50);
+        AssetLoader.shadow.draw(batcher, "" + allyGold.getValue(), 100, 50);
+        AssetLoader.font.draw(batcher, "" + allyGold.getValue(), 100, 50);
 
 
 /*

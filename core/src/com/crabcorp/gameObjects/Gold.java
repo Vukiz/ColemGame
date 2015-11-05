@@ -9,9 +9,11 @@ public class Gold {
     private final int incomeIncrement = 5;
     private final float incomeTime = 4;
     private float timeSinceLastIncome = 0;
+    private int currentGoldChange;
     public Gold(){
         this.value = 30;
         this.income = 10;
+        this.currentGoldChange = 0;
     }
 
     public void tryToIncrease(){
@@ -33,6 +35,7 @@ public class Gold {
     }
     public void increaseGold(int gold){
         this.value += gold;
+        this.currentGoldChange += gold;
     }
     public void goldIncome(float d) {
         timeSinceLastIncome += d;
@@ -40,5 +43,10 @@ public class Gold {
             this.increaseGold(this.income);
             timeSinceLastIncome -= incomeTime;
         }
+    }
+    public int getChange(){
+        int valueToReturn = this.currentGoldChange;
+        this.currentGoldChange = 0;
+        return valueToReturn;
     }
 }
