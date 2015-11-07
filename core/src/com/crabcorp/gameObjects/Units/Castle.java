@@ -59,7 +59,11 @@ public class Castle implements com.crabcorp.gameObjects.Units.Unit {
 
     public void draw(Batch batcher,float runTime){
         batcher.begin();
-        batcher.draw(AssetLoader.castle, this.position.x < 600? this.position.x - this.width:this.position.x, this.position.y, this.width, this.height); // ВЫРАВНИВАЮ С ФОНОМ
+        batcher.draw(AssetLoader.castle,
+                this.position.x,
+                this.position.y,
+                this.width,
+                this.height); // ВЫРАВНИВАЮ С ФОНОМ
         batcher.end();
     }
 

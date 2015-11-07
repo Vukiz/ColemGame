@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -17,6 +18,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.crabcorp.buttons.ColemButtons;
 import com.crabcorp.cgHelpers.AssetLoader;
+import com.crabcorp.gameObjects.MinesView;
 import com.crabcorp.gameObjects.Units.Castle;
 import com.crabcorp.gameObjects.CurrencyThings.Gold;
 import com.crabcorp.gameObjects.Units.Knight;
@@ -67,6 +69,7 @@ public class GameWorld {
     private String output;
     private GameState currentState;
     private EventListener StartGameListener;
+    private MinesView mines;
 
     public enum GameState {
         PAUSE, GAMEOVER, GAMEON, READY
@@ -78,10 +81,10 @@ public class GameWorld {
         //TODO SCALE UNITS SIZE BY PERCENTAGES
         castleWidth = (int) screenWidth / 10;
         castleHeight = (int) screenHeight / 4;
-        castleMinePosX = castleWidth;
-        castleMinePosY = screenHeight - 2 * castleHeight + screenHeight / 20;
-        castleEnemyPosX = screenWidth - castleWidth;
-        castleEnemyPosY = screenHeight - 2 * castleHeight + screenHeight / 20;
+        castleMinePosX = castleWidth / 10;
+        castleMinePosY = screenHeight - castleHeight * 11 / 10;
+        castleEnemyPosX = screenWidth - castleWidth * 11 / 10;
+        castleEnemyPosY = screenHeight - castleHeight * 11 / 10;
 
         cam = new OrthographicCamera();
         cam.setToOrtho(true, screenWidth, screenHeight);
@@ -174,7 +177,9 @@ public class GameWorld {
                 break;
         }
     }
+    public void mergeUnits(){
 
+    }
     public void update(float delta) {
         switch (currentState) {
             case GAMEON:
@@ -284,26 +289,18 @@ public class GameWorld {
         switch (spawnSide) {
             case 1:
                 alliesList.add(Spawner.spawnKnight(castleMinePosX,
-                        castleMinePosY + castleHeight / 2 + castleHeight / 5,
+                        castleMinePosY + castleHeight - 100,
                         false));
                 allyGold.increaseGold(-10);
-
-                if (currentAlliesFront == castleMine) {
-                    currentAlliesFront = alliesList.getLast();
-                }
                 break;
             case 2:
                 if (AImoveCD >= 1 && enemyGold.getValue() >= 10) {
                     Gdx.app.log("ColemGame-EnemyAI", "Knight called");
                     enemyGold.increaseGold(-10);
                     AImoveCD = 0;
-
                     enemyList.add(Spawner.spawnKnight(castleEnemyPosX,
-                            castleEnemyPosY + castleHeight / 2 + castleHeight / 5,
+                            castleEnemyPosY + castleHeight - 100,// - knightHeight
                             true));
-                    if (currentEnemyFront == castleEnemy) {
-                        currentEnemyFront = enemyList.getLast();
-                    }
                 }
                 break;
             default:
@@ -354,8 +351,8 @@ public class GameWorld {
 
         batcher.draw(AssetLoader.background, 0, 0, screenWidth, screenHeight);
 
-        AssetLoader.shadow.draw(batcher, "" + output, (screenWidth / 2) - 100, 50);
-        AssetLoader.font.draw(batcher, "" + output, (screenWidth / 2) - 100, 50);
+        AssetLoader.shadow.draw(batcher, "" + output, (screenWidth / 2) - 100, 25);
+        AssetLoader.font.draw(batcher, "" + output, (screenWidth / 2) - 100, 25);
 
         AssetLoader.shadow.draw(batcher, "" + enemyGold.getValue(), (screenWidth) - 150, 50);
         AssetLoader.font.draw(batcher, "" + enemyGold.getValue(), (screenWidth) - 150, 50);
@@ -379,7 +376,7 @@ public class GameWorld {
         batcher.end();
     }
 
-    public void initObjects(Viewport v) {
+    private void initObjects(Viewport v) {
 
         menuPopup = new Table(){
             @Override
@@ -392,23 +389,28 @@ public class GameWorld {
             }
         };
         menuPopup.setBounds(screenWidth / 2 - 150, screenHeight / 2 - 150, 300, 150);
-
+        mines = new MinesView(
+                castleWidth*3/2,
+                castleHeight/2,
+                castleEnemyPosX - castleMinePosX - 2*castleWidth,
+                screenHeight - castleHeight
+        );
         initButton();
         stage = new Stage(v, batcher);
         stage.addActor(buttonSpawnLeft);
         stage.addActor(buttonSpawnRight);
         stage.addActor(buttonMenu);
-
+        stage.addActor(mines);
         menuPopup.addActor(buttonUnpause);
         menuPopup.addActor(buttonRestart);
 
     }
 
     private void initButton() {
-        buttonSpawnLeft = ColemButtons.createButton(0, screenHeight - 100, 100, 100, AssetLoader.buttonSpawn);
-        buttonSpawnRight = ColemButtons.createButton(150, screenHeight - 100, 100, 100, AssetLoader.buttonIncome);
+        buttonSpawnLeft = ColemButtons.createButton(0, screenHeight /2 - 150, 100, 100, AssetLoader.buttonSpawn);
+        buttonSpawnRight = ColemButtons.createButton(0, screenHeight /2, 100, 100, AssetLoader.buttonIncome);
 
-        buttonMenu = ColemButtons.createButton(screenWidth - 200, 100, 100, 100, AssetLoader.buttonMenu);
+        buttonMenu = ColemButtons.createButton(screenWidth - 100, 100, 100, 100, AssetLoader.buttonMenu);
         buttonRestart = ColemButtons.createButton(150, 20, 100, 100, AssetLoader.buttonRestart);
         buttonUnpause = ColemButtons.createButton(20,20, 100, 100, AssetLoader.buttonUnpause);
         buttonRestart.addListener(new ClickListener() {
@@ -451,11 +453,8 @@ public class GameWorld {
             }
         });
     }
-
-        public Stage getStage() {
+    public Stage getStage() {
             return this.stage;
         }
-
-
 }
 
