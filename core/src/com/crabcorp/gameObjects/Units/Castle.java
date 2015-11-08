@@ -1,5 +1,6 @@
 package com.crabcorp.gameObjects.Units;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.crabcorp.cgHelpers.AssetLoader;
@@ -11,11 +12,16 @@ public class Castle implements com.crabcorp.gameObjects.Units.Unit {
     private boolean dead = false;
     private int health = 2000;
 
-    public Castle(float x, float y,int width,int height){
-
-        this.width = width;
-        this.height = height;
-        this.position = new Vector2(x,y);
+    public Castle(boolean isEmemy){
+        this.width = Gdx.graphics.getWidth() / 10;
+        this.height = Gdx.graphics.getHeight() / 4;
+        if(!isEmemy) {
+            this.position = new Vector2(width / 10, height * 29 / 10);
+        }
+        else
+        {
+            this.position = new Vector2(width * 89 / 10,height * 29 / 10);
+        }
 
     }
 

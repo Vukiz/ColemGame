@@ -36,8 +36,6 @@ public class Knight implements com.crabcorp.gameObjects.Units.Unit {
     private float attackCooldown = 0;
     private float startTime = 0,currentTimeElapsed = 0,fadeTime = 0;
 
-
-
     public Knight(float x, float y, boolean isEnemy){
         this.position = new Vector2(x,y);
         this.velocity = new Vector2(this.speed,0);
@@ -77,13 +75,10 @@ public class Knight implements com.crabcorp.gameObjects.Units.Unit {
         return;
 
     }
-
     @Override
     public void pause() {
         this.isPaused = true;
     }
-
-
     public void setStayState() {
         this.velocity = new Vector2(0, 0);
         this.currentState = STATE.STAY;
@@ -102,7 +97,6 @@ public class Knight implements com.crabcorp.gameObjects.Units.Unit {
         this.dieing = true;
         this.currentState = STATE.DIE;
     }
-
     private void actionATTACK(float delta) {
         this.attackCooldown += delta;
         if(this.attackCooldown >= this.attackSpeed) {
@@ -110,10 +104,8 @@ public class Knight implements com.crabcorp.gameObjects.Units.Unit {
             while(this.attackCooldown >= this.attackSpeed){
                 this.attackCooldown -= this.attackSpeed;
             }
-            //TODO ATTACK QUEUE??? if they will gather more than (target.health / this.attack) units they will oneshot them
         }
     }
-
     private void actionMOVE(float delta) {
         this.position.add(velocity.cpy().scl(delta));
     }
