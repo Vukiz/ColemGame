@@ -256,7 +256,7 @@ public class GameWorld {
                     dieing.add(i);
                     enemyGold.increaseGold(Knight.cost);
                 } else {
-                    if (i.getX() > currentAlliesFront.getX()) {
+                    if (i.getX() > currentAlliesFront.getX() || currentAlliesFront == castleMine) {
                         currentAlliesFront = i;
                     }
                 }
@@ -266,7 +266,7 @@ public class GameWorld {
                     dieing.add(i);
                     allyGold.increaseGold(Knight.cost);
                 } else {
-                    if (i.getX() < currentEnemyFront.getX()) {
+                    if (i.getX() < currentEnemyFront.getX() || currentEnemyFront == castleEnemy) {
                         currentEnemyFront = i;
                     }
                 }

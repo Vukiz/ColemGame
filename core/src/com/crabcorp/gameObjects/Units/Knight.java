@@ -109,6 +109,7 @@ public class Knight extends Actor implements com.crabcorp.gameObjects.Units.Unit
     }
     private void actionMOVE(float delta) {
         this.position.add(velocity.cpy().scl(delta));
+        this.setX(this.position.x);
     }
     public void draw (Batch batch, float runTime){
         batch.begin();
