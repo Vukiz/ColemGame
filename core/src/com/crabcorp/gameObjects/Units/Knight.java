@@ -3,9 +3,10 @@ package com.crabcorp.gameObjects.Units;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.crabcorp.cgHelpers.AssetLoader;
 
-public class Knight implements com.crabcorp.gameObjects.Units.Unit {
+public class Knight extends Actor implements com.crabcorp.gameObjects.Units.Unit {
     private Vector2 position;
     private Vector2 velocity;
 
@@ -148,18 +149,8 @@ public class Knight implements com.crabcorp.gameObjects.Units.Unit {
     public boolean isDieing(){
         return this.dieing;
     }
-    public float getX(){
-        return this.position.x;
-    }
-    public float getY(){
-        return this.position.y;
-    }
-    public int getHeight() {
-        return this.height;
-    }
-    public int getWidth() {
-        return this.width;
-    }
+
+
     public DEST getDestination() {
         return this.destination;
     }

@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 public class AssetLoader  {
     public static Texture knightTexture;
     public static Texture backTextures;
-    public static Texture minesTexture;
+    public static TextureRegionDrawable minesTexture;
     public static Animation knightAnimationMoving,knightAnimationAttack,knightAnimationDieing;
 
     public static TextureRegion knightStand,knightMove1,knightMove2,knightMove3,castle;
@@ -33,7 +33,7 @@ public class AssetLoader  {
     public static void load(){
         knightTexture = new Texture(Gdx.files.internal("KnightPack.png"));
         backTextures = new Texture(Gdx.files.internal("backgroundTexture.png"));
-        minesTexture = new Texture(Gdx.files.internal("mineView.png"));
+        minesTexture = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("mineView.png"))));
 
         knightTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         backTextures.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);

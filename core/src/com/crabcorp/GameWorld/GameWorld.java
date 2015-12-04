@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -23,6 +22,7 @@ import com.crabcorp.gameObjects.Units.Castle;
 import com.crabcorp.gameObjects.CurrencyThings.Gold;
 import com.crabcorp.gameObjects.Units.Knight;
 import com.crabcorp.gameObjects.Spawner;
+import com.crabcorp.gameObjects.Units.Mine;
 import com.crabcorp.gameObjects.Units.Unit;
 import com.crabcorp.gameObjects.CurrencyThings.ValueChange;
 import com.crabcorp.gameObjects.Units.Worker;
@@ -49,6 +49,8 @@ public class GameWorld {
     private LinkedList<Unit> enemyList;
     private LinkedList<Unit> dieing;
     private LinkedList<ValueChange> changes;
+    private LinkedList<Mine> minesList;
+
     private Unit currentAlliesFront;
     private Unit currentEnemyFront;
     private Castle castleMine;
@@ -64,7 +66,10 @@ public class GameWorld {
     private String output;
     private GameState currentState;
     private EventListener StartGameListener;
-    private MinesView mines;
+    private MinesView minesView;
+    private int mineSpawnX = 50;
+    private int mineSpawnY = 50;
+
 
     public enum GameState {
         PAUSE, GAMEOVER, GAMEON, READY
@@ -102,7 +107,7 @@ public class GameWorld {
         enemyList = new LinkedList<Unit>();
         dieing = new LinkedList<Unit>();
         changes = new LinkedList<ValueChange>();
-
+        minesList = new LinkedList<Mine>();
         castleMine = Spawner.spawnCastle(false);
         castleEnemy = Spawner.spawnCastle(true);
 
@@ -114,6 +119,7 @@ public class GameWorld {
 
         allyGold = new Gold();
         enemyGold = new Gold();
+
         setState(GameState.READY);
 
     }
@@ -165,6 +171,7 @@ public class GameWorld {
                 break;
         }
     }
+
     public void update(float delta) {
         switch (currentState) {
             case GAMEON:
@@ -183,6 +190,7 @@ public class GameWorld {
                         dieing.remove(i);
                     }
                 }
+                stage.act();
 
                 break;
             case PAUSE:
@@ -192,21 +200,21 @@ public class GameWorld {
             case READY:
                 break;
         }
-        for (ValueChange i : changes){
+        for (ValueChange i : changes) {
             i.update(delta);
         }
-        for (int i = 0; i < changes.size(); i++){
-            if(changes.get(i).mustBeRemoved()){
+        for (int i = 0; i < changes.size(); i++) {
+            if (changes.get(i).mustBeRemoved()) {
                 changes.remove(i);
             }
         }
         int allyChange = allyGold.getChange();
         int enemyChange = enemyGold.getChange();
 
-        if(allyChange!= 0) {
+        if (allyChange != 0) {
             changes.add(new ValueChange(allyChange, 150, 90));
         }
-        if(enemyChange != 0) {
+        if (enemyChange != 0) {
             changes.add(new ValueChange(enemyChange, (screenWidth) - 150, 90));
         }
     }
@@ -215,9 +223,8 @@ public class GameWorld {
 
         AImoveCD += delta;
         if (enemyGold.getIncome() >= 30) {
-            spawn(1,2);
-        }
-        else {
+            spawn(1, 2);
+        } else {
             if (enemyList.size() <= alliesList.size()) {
                 spawn(1, 2);
             }
@@ -227,6 +234,7 @@ public class GameWorld {
             }
         }
     }
+
     private void setFrontline() {
         if (currentAlliesFront != null && currentEnemyFront != null) {       //вообще сомнительно, подразумевает, что в начале игры таргеты обязательно кастлы.
             if (castleMine.isDead()) {
@@ -269,6 +277,7 @@ public class GameWorld {
             }
         }
     }
+
     public void spawn(int spawnType, int spawnSide) {
         switch (spawnSide) {
             case 1:
@@ -293,13 +302,35 @@ public class GameWorld {
         }
     }
 
+    public void spawnWorker() {
+
+        Worker currentWorker = new Worker(0, mineSpawnY + 100);
+        currentWorker.setTargetPos(minesView.getTargetpos());
+        minesView.addActor(currentWorker);
+    }
+
+    public void spawnMine() {
+        Mine currentMine = new Mine(mineSpawnX, mineSpawnY);
+        currentMine.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                minesView.setTargetpos(x, y);
+
+            }
+        });
+        minesList.add(currentMine);
+        minesView.addActor(currentMine);
+
+    }
+
     //rendering
     public void render(float runTime) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         drawBackground();                              //BG and text
         stage.draw();
-        for(ValueChange i : changes){
+        for (ValueChange i : changes) {
             i.draw(batcher);
         }
         switch (currentState) {
@@ -363,20 +394,21 @@ public class GameWorld {
     private void initObjects(Viewport v) {
         initButton();
         menuPopupInit();
-        minesInit();
+        minesViewInit();
         stageInit(v);
     }
+
     private void initButton() {
-        buttonSpawnLeft = ColemButtons.createButton(0, screenHeight /2 - 150, 100, 100, AssetLoader.buttonSpawn);
-        buttonSpawnRight = ColemButtons.createButton(0, screenHeight /2, 100, 100, AssetLoader.buttonIncome);
+        buttonSpawnLeft = ColemButtons.createButton(0, screenHeight / 2 - 150, 100, 100, AssetLoader.buttonSpawn);
+        buttonSpawnRight = ColemButtons.createButton(0, screenHeight / 2, 100, 100, AssetLoader.buttonIncome);
 
         buttonMenu = ColemButtons.createButton(screenWidth - 100, 100, 100, 100, AssetLoader.buttonMenu);
         buttonRestart = ColemButtons.createButton(150, 20, 100, 100, AssetLoader.buttonRestart);
-        buttonUnpause = ColemButtons.createButton(20,20, 100, 100, AssetLoader.buttonUnpause);
+        buttonUnpause = ColemButtons.createButton(20, 20, 100, 100, AssetLoader.buttonUnpause);
         buttonRestart.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.log("ColemGame-Listeners","  restart clicked");
+                Gdx.app.log("ColemGame-Listeners", "  restart clicked");
                 menuPopup.remove();
                 StartGame();
             }
@@ -385,7 +417,7 @@ public class GameWorld {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 allyGold.tryToIncrease();
-                mines.addActor(new Worker(0, 0));
+                minesView.addActor(new Worker(0, 0));
             }
         });
         buttonSpawnLeft.addListener(new ClickListener() {
@@ -414,8 +446,9 @@ public class GameWorld {
             }
         });
     }
+
     private void menuPopupInit() {
-        menuPopup = new Table(){
+        menuPopup = new Table() {
             @Override
             public void draw(Batch batch, float parentAlpha) {
                 batch.draw(AssetLoader.menuLayout,
@@ -429,24 +462,34 @@ public class GameWorld {
         menuPopup.addActor(buttonRestart);
         menuPopup.setBounds(screenWidth / 2 - 150, screenHeight / 2 - 150, 300, 150);
     }
+
     private void stageInit(Viewport v) {
         stage = new Stage(v, batcher);
         stage.addActor(buttonSpawnLeft);
         stage.addActor(buttonSpawnRight);
         stage.addActor(buttonMenu);
-        stage.addActor(mines);
+        //stage.addActor(minesView);
     }
-    private void minesInit() {
-        mines = new MinesView(
-                screenWidth * 3/20,
+
+    private void minesViewInit() {
+        minesView = new MinesView(//between two castles
+                screenWidth * 3 / 20,
                 screenHeight / 8,
-                (screenWidth * 68 ) / 100,
+                (screenWidth * 68) / 100,
                 screenHeight * 3 / 4
         );
+        minesView.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                spawnMine();
+                spawnWorker();
+            }
+        });
     }
 
     public Stage getStage() {
-            return this.stage;
-        }
+        return this.stage;
+    }
 }
 

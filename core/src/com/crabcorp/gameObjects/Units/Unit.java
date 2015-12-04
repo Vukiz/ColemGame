@@ -1,25 +1,28 @@
 package com.crabcorp.gameObjects.Units;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by Евгений on 08.10.2015.
  */
-public interface Unit  {
-    public void draw (Batch batch, float runTime);
-    public float getX();
-    public float getY();
-    public int getHeight();
-    public int getWidth();
-    public boolean isDead();
-    public void update(float delta,Unit target);
-    public void hit(int damage);
+public interface Unit {
+    void draw(Batch batch, float runTime);
 
-    public void die();
-    public boolean isDieing();
+    float getX();
 
+    float getY();
 
-    public void pause();
+    boolean isDead();
+
+    void update(float delta, Unit target);
+
+    void hit(int damage);
+
+    void die();
+
+    boolean isDieing();
+
+    void pause();
 }
     //TODO Randomize attack system
-    //TODO actionbuttons???
